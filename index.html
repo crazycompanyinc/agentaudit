@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentAudit — AI Agent Security Scanner</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;
+  --text:#e4e4ef;--muted:#8888a0;--accent:#e85d4a;--accent2:#f0932b;
+  --green:#2ed573;--blue:#5dade2;--purple:#a55eea;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+nav .container{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-size:1.3rem;font-weight:800;color:var(--text);text-decoration:none}
+.logo span{color:var(--accent)}
+.nav-links{display:flex;gap:32px;align-items:center}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.btn{padding:10px 24px;border-radius:8px;font-weight:600;font-size:0.9rem;text-decoration:none;cursor:pointer;transition:all .2s;border:none;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#d14a38;transform:translateY(-1px)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+/* Hero */
+.hero{padding:140px 0 80px;text-align:center;position:relative}
+.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse,rgba(232,93,74,0.12),transparent 70%);z-index:-1}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:50px;background:rgba(232,93,74,0.1);border:1px solid rgba(232,93,74,0.2);color:var(--accent);font-size:0.8rem;font-weight:600;margin-bottom:24px}
+.badge span{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+h1{font-size:clamp(2.5rem,5vw,3.8rem);font-weight:800;line-height:1.1;margin-bottom:20px;letter-spacing:-0.03em}
+h1 .highlight{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.15rem;color:var(--muted);max-width:600px;margin:0 auto 36px;line-height:1.7}
+.hero-cta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.hero-cta .btn{padding:14px 32px;font-size:1rem}
+/* Terminal */
+.terminal{max-width:720px;margin:48px auto 0;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4)}
+.terminal-header{display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.terminal-header .dot{width:12px;height:12px;border-radius:50%}
+.terminal-header .dot.red{background:#ff5f57}
+.terminal-header .dot.yellow{background:#febc2e}
+.terminal-header .dot.green{background:#28c840}
+.terminal-header span{margin-left:auto;font-size:0.75rem;color:var(--muted);font-family:monospace}
+.terminal-body{padding:20px 24px;font-family:'SF Mono','Fira Code',monospace;font-size:0.85rem;line-height:1.8;overflow-x:auto}
+.line{color:var(--muted)}
+.line.cmd{color:var(--green)}
+.line.warn{color:var(--accent2)}
+.line.danger{color:var(--accent)}
+.line.info{color:var(--blue)}
+.line.dim{color:#555}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;padding:60px 0;border-bottom:1px solid var(--border)}
+.stat{text-align:center}
+.stat-value{font-size:2rem;font-weight:800;color:var(--accent)}
+.stat-label{font-size:0.85rem;color:var(--muted);margin-top:4px}
+/* Sections */
+section{padding:80px 0}
+.section-label{font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:12px}
+h2{font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;letter-spacing:-0.02em;margin-bottom:16px}
+.section-sub{font-size:1.05rem;color:var(--muted);max-width:640px;margin-bottom:48px;line-height:1.7}
+/* Problem */
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.problem-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;transition:border-color .2s}
+.problem-card:hover{border-color:var(--accent)}
+.problem-icon{font-size:1.8rem;margin-bottom:16px}
+.problem-card h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.problem-card p{font-size:0.9rem;color:var(--muted);line-height:1.6}
+/* Features */
+.features-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px;display:flex;gap:20px;transition:border-color .2s}
+.feature-card:hover{border-color:rgba(232,93,74,0.3)}
+.feature-icon{width:48px;height:48px;border-radius:10px;background:rgba(232,93,74,0.1);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.feature-card h3{font-size:1.05rem;font-weight:700;margin-bottom:6px}
+.feature-card p{font-size:0.9rem;color:var(--muted);line-height:1.6}
+/* How it works */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.step{text-align:center;position:relative}
+.step-num{width:48px;height:48px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:var(--accent);margin:0 auto 16px}
+.step h3{font-size:1rem;font-weight:700;margin-bottom:8px}
+.step p{font-size:0.85rem;color:var(--muted);line-height:1.6}
+/* Comparison */
+.comparison-table{width:100%;border-collapse:collapse;margin-top:24px}
+.comparison-table th,.comparison-table td{padding:14px 20px;text-align:center;border-bottom:1px solid var(--border);font-size:0.9rem}
+.comparison-table th{background:var(--surface);font-weight:600;color:var(--muted);font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em}
+.comparison-table th:first-child,.comparison-table td:first-child{text-align:left;font-weight:600;color:var(--text)}
+.comparison-table tr:last-child td{border-bottom:none}
+.check{color:var(--green);font-weight:700}
+.cross{color:var(--accent);opacity:0.5}
+/* Pricing */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.pricing-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px;position:relative;transition:border-color .2s}
+.pricing-card:hover{border-color:rgba(232,93,74,0.3)}
+.pricing-card.popular{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:4px 16px;border-radius:50px;font-size:0.75rem;font-weight:700}
+.pricing-card h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.pricing-card .price{font-size:2.5rem;font-weight:800;margin:16px 0}
+.pricing-card .price span{font-size:1rem;font-weight:500;color:var(--muted)}
+.pricing-card .price-desc{font-size:0.85rem;color:var(--muted);margin-bottom:24px}
+.pricing-features{list-style:none;margin-bottom:32px}
+.pricing-features li{padding:8px 0;font-size:0.9rem;color:var(--muted);display:flex;align-items:center;gap:10px}
+.pricing-features li span{color:var(--green);font-weight:700}
+.pricing-card .btn{width:100%;justify-content:center}
+/* FAQ */
+.faq-item{border-bottom:1px solid var(--border);padding:24px 0}
+.faq-q{font-size:1.05rem;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.faq-q::after{content:'+';font-size:1.3rem;color:var(--muted);transition:transform .3s}
+.faq-q.active::after{transform:rotate(45deg)}
+.faq-a{display:none;padding-top:12px;font-size:0.95rem;color:var(--muted);line-height:1.7}
+.faq-a.open{display:block}
+/* CTA */
+.cta-section{text-align:center;padding:100px 0;background:linear-gradient(180deg,transparent,rgba(232,93,74,0.05))}
+.cta-section h2{margin-bottom:16px}
+.cta-section p{margin-bottom:36px;color:var(--muted);font-size:1.05rem}
+/* Footer */
+footer{border-top:1px solid var(--border);padding:40px 0;text-align:center}
+footer p{font-size:0.85rem;color:var(--muted)}
+footer a{color:var(--accent);text-decoration:none}
+/* Responsive */
+@media(max-width:768px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .problem-grid,.features-grid,.steps,.pricing-grid{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .hero{padding:120px 0 60px}
+  h1{font-size:2.2rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="container">
+    <a href="#" class="logo">Agent<span>Audit</span></a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/crazycompanyinc/agentaudit" class="btn btn-secondary">GitHub</a>
+      <a href="#pricing" class="btn btn-primary">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="badge"><span></span> Open Source • v1.0 Beta</div>
+    <h1>Stop AI Agents From <span class="highlight">Leaking Your Data</span></h1>
+    <p class="hero-sub">Automated security scanner for AI agents. Detect prompt injection, PII leakage, unauthorized tool use, and SSRF attacks — before they hit production.</p>
+    <div class="hero-cta">
+      <a href="#pricing" class="btn btn-primary">Start Free Scan →</a>
+      <a href="https://github.com/crazycompanyinc/agentaudit" class="btn btn-secondary">⭐ Star on GitHub</a>
+    </div>
+    <div class="terminal">
+      <div class="terminal-header">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+        <span>$ agentaudit scan --agent my-agent.yaml</span>
+      </div>
+      <div class="terminal-body">
+        <div class="line dim">─────────────────────────────────────────────────────</div>
+        <div class="line">🔍 <strong>AgentAudit v1.0</strong> — Scanning agent configuration...</div>
+        <div class="line dim">─────────────────────────────────────────────────────</div>
+        <div class="line">  📋 Checking prompt injection vectors... <span class="line danger">3 found</span></div>
+        <div class="line">  🔐 Scanning for PII leakage patterns... <span class="line warn">1 warning</span></div>
+        <div class="line">  🛡️  Analyzing tool permissions... <span class="line danger">2 overprivileged</span></div>
+        <div class="line">  🌐 Testing SSRF attack surface... <span class="line cmd">✓ Clean</span></div>
+        <div class="line">  📊 Evaluating output sanitization... <span class="line warn">Partial</span></div>
+        <div class="line dim">─────────────────────────────────────────────────────</div>
+        <div class="line danger">  ⚠️  Risk Score: <strong>7.2/10 (HIGH)</strong> — 6 issues found</div>
+        <div class="line info">  💡 Run <strong>agentaudit fix</strong> for auto-remediation</div>
+        <div class="line dim">─────────────────────────────────────────────────────</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="container">
+  <div class="stats">
+    <div class="stat"><div class="stat-value">15+</div><div class="stat-label">Attack Vectors Detected</div></div>
+    <div class="stat"><div class="stat-value">&lt;60s</div><div class="stat-label">Scan Time</div></div>
+    <div class="stat"><div class="stat-value">0</div><div class="stat-label">False Positives*</div></div>
+    <div class="stat"><div class="stat-value">100%</div><div class="stat-label">Open Source Core</div></div>
+  </div>
+</div>
+
+<!-- Problem -->
+<section>
+  <div class="container">
+    <div class="section-label">The Problem</div>
+    <h2>AI Agents Are a Security Blind Spot</h2>
+    <p class="section-sub">Traditional security tools don't understand AI agent behavior. Attackers know this.</p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="problem-icon">💉</div>
+        <h3>Prompt Injection</h3>
+        <p>Malicious inputs hijack your agent's behavior, exfiltrating data or executing unauthorized actions.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">🔓</div>
+        <h3>PII Leakage</h3>
+        <p>Agents inadvertently expose customer PII, API keys, and proprietary data in their responses.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">🔧</div>
+        <h3>Tool Misuse</h3>
+        <p>Overprivileged tool access lets agents perform destructive operations beyond their intended scope.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">🌐</div>
+        <h3>SSRF Attacks</h3>
+        <p>Agents fetching external URLs can be tricked into accessing internal services and cloud metadata.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">📦</div>
+        <h3>Supply Chain Risk</h3>
+        <p>MCP servers and third-party tools can inject malicious instructions into your agent's context.</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">📊</div>
+        <h3>No Visibility</h3>
+        <p>Teams deploy agents with zero security auditing. Breaches go undetected for weeks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <div class="container">
+    <div class="section-label">Features</div>
+    <h2>Enterprise-Grade Security, Startup-Friendly Price</h2>
+    <p class="section-sub">Everything you need to secure your AI agents — without the enterprise price tag.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <div><h3>Static Analysis</h3><p>Scan agent configs, prompts, and tool definitions for vulnerabilities before deployment.</p></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧪</div>
+        <div><h3>Dynamic Fuzzing</h3><p>Send adversarial inputs to your agent and monitor for unexpected behaviors in real-time.</p></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <div><h3>PII Detection</h3><p>Automatically detect when agents leak emails, phone numbers, SSNs, API keys, and tokens.</p></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <div><h3>Tool Permission Audit</h3><p>Identify overprivileged tools and get least-privilege recommendations.</p></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <div><h3>CI/CD Integration</h3><p>GitHub Action + CLI that blocks vulnerable agents from reaching production.</p></div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div><h3>Security Dashboard</h3><p>Team-wide visibility into agent security posture with trend tracking and alerts.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section id="how-it-works">
+  <div class="container">
+    <div class="section-label">How It Works</div>
+    <h2>Secure Your Agents in 4 Steps</h2>
+    <p class="section-sub">From zero to fully audited in under 5 minutes.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Install</h3>
+        <p><code>npm i -g agentaudit</code> or use our GitHub Action</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Configure</h3>
+        <p>Point to your agent config, MCP tools, and prompt templates</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Scan</h3>
+        <p>Run <code>agentaudit scan</code> — get results in under 60 seconds</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h3>Remediate</h3>
+        <p>Auto-fix with <code>agentaudit fix</code> or review detailed reports</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison -->
+<section>
+  <div class="container">
+    <div class="section-label">Comparison</div>
+    <h2>Why AgentAudit?</h2>
+    <p class="section-sub">See how we compare to existing solutions.</p>
+    <div style="overflow-x:auto">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>AgentAudit</th>
+            <th>Pangea</th>
+            <th>Pipelock</th>
+            <th>Manual Review</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Prompt Injection Detection</td><td class="check">✅</td><td class="check">✅</td><td class="check">✅</td><td class="cross">❌</td></tr>
+          <tr><td>PII Leakage Scanning</td><td class="check">✅</td><td class="check">✅</td><td class="cross">❌</td><td class="cross">❌</td></tr>
+          <tr><td>Tool Permission Audit</td><td class="check">✅</td><td class="cross">❌</td><td class="cross">❌</td><td class="cross">❌</td></tr>
+          <tr><td>SSRF Protection</td><td class="check">✅</td><td class="cross">❌</td><td class="check">✅</td><td class="cross">❌</td></tr>
+          <tr><td>Open Source Core</td><td class="check">✅</td><td class="cross">❌</td><td class="check">✅</td><td class="cross">❌</td></tr>
+          <tr><td>Self-Hosted Option</td><td class="check">✅</td><td class="cross">❌</td><td class="check">✅</td><td class="check">✅</td></tr>
+          <tr><td>Free Tier</td><td class="check">✅</td><td class="cross">❌</td><td class="check">✅</td><td class="check">✅</td></tr>
+          <tr><td>CI/CD Integration</td><td class="check">✅</td><td class="check">✅</td><td class="check">✅</td><td class="cross">❌</td></tr>
+          <tr><td>Team Dashboard</td><td class="check">✅</td><td class="check">✅</td><td class="cross">❌</td><td class="cross">❌</td></tr>
+          <tr><td>Starting Price</td><td><strong>Free</strong></td><td><strong>Custom</strong></td><td><strong>Free</strong></td><td><strong>$0</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-label">Pricing</div>
+    <h2>Start Free, Scale When Ready</h2>
+    <p class="section-sub">Open-source core is always free. Paid plans add team features and advanced scanning.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Open Source</h3>
+        <div class="price">$0<span>/forever</span></div>
+        <p class="price-desc">For individual developers and small projects</p>
+        <ul class="pricing-features">
+          <li><span>✓</span> Static analysis</li>
+          <li><span>✓</span> Prompt injection detection</li>
+          <li><span>✓</span> PII scanning</li>
+          <li><span>✓</span> CLI tool</li>
+          <li><span>✓</span> Community support</li>
+        </ul>
+        <a href="https://github.com/crazycompanyinc/agentaudit" class="btn btn-secondary">View on GitHub</a>
+      </div>
+      <div class="pricing-card popular">
+        <div class="popular-badge">MOST POPULAR</div>
+        <h3>Pro</h3>
+        <div class="price">$29<span>/mo</span></div>
+        <p class="price-desc">For teams securing production agents</p>
+        <ul class="pricing-features">
+          <li><span>✓</span> Everything in Open Source</li>
+          <li><span>✓</span> Dynamic fuzzing</li>
+          <li><span>✓</span> Tool permission audit</li>
+          <li><span>✓</span> GitHub Action</li>
+          <li><span>✓</span> Email support</li>
+          <li><span>✓</span> 5 team members</li>
+        </ul>
+        <a href="#cta" class="btn btn-primary">Start Free Trial</a>
+      </div>
+      <div class="pricing-card">
+        <h3>Team</h3>
+        <div class="price">$79<span>/mo</span></div>
+        <p class="price-desc">For organizations with multiple agent teams</p>
+        <ul class="pricing-features">
+          <li><span>✓</span> Everything in Pro</li>
+          <li><span>✓</span> Security dashboard</li>
+          <li><span>✓</span> Unlimited team members</li>
+          <li><span>✓</span> SSO / SAML</li>
+          <li><span>✓</span> Priority support</li>
+          <li><span>✓</span> Custom scan policies</li>
+        </ul>
+        <a href="#cta" class="btn btn-secondary">Contact Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="section-label">FAQ</div>
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.classList.toggle('active');this.nextElementSibling.classList.toggle('open')">What AI frameworks does AgentAudit support?</div>
+      <div class="faq-a">AgentAudit is framework-agnostic. It works with LangChain, CrewAI, AutoGen, OpenAI Agents SDK, custom agents, and any MCP-compatible tool. If your agent has a config file or prompt templates, we can scan it.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.classList.toggle('active');this.nextElementSibling.classList.toggle('open')">Is the open-source version really free?</div>
+      <div class="faq-a">Yes. The core scanner — static analysis, prompt injection detection, PII scanning, and CLI — is 100% open source under MIT license. No credit card, no usage limits.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.classList.toggle('active');this.nextElementSibling.classList.toggle('open')">How is this different from Pangea or Pipelock?</div>
+      <div class="faq-a">Pangea is an API-based service (not self-hosted, no free tier). Pipelock focuses on runtime egress control. AgentAudit combines static analysis + dynamic fuzzing + CI/CD integration in one tool, with a self-hosted option and a free open-source core.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.classList.toggle('active');this.nextElementSibling.classList.toggle('open')">Can I integrate AgentAudit into my CI/CD pipeline?</div>
+      <div class="faq-a">Absolutely. We provide a GitHub Action and a CLI that returns non-zero exit codes on critical findings. Block vulnerable agents from reaching production automatically.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.classList.toggle('active');this.nextElementSibling.classList.toggle('open')">What's the scan time?</div>
+      <div class="faq-a">Static analysis completes in under 30 seconds. Dynamic fuzzing (Pro) takes 1-3 minutes depending on the number of tool endpoints. All results are cached for subsequent runs.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="cta-section">
+  <div class="container">
+    <h2>Secure Your AI Agents Today</h2>
+    <p>Join 1,000+ developers who trust AgentAudit to keep their agents safe.</p>
+    <div class="hero-cta">
+      <a href="https://github.com/crazycompanyinc/agentaudit" class="btn btn-primary">⭐ Star on GitHub — It's Free</a>
+      <a href="#pricing" class="btn btn-secondary">View Pricing</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>© 2026 <a href="https://zoo.dev">ZOO</a> — Built with ❤️ by crazycompanyinc</p>
+    <p style="margin-top:8px"><a href="https://github.com/crazycompanyinc/agentaudit">GitHub</a> · <a href="#">Twitter</a> · <a href="#">Discord</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
